@@ -34,43 +34,48 @@ List<AdobeUser> users = userManagementApi.GetOrgUsers();
 List<AdobeUser> users = userManagementApi.GetGroupMembers("Your group name");
 ```
 
+### Get all groups
+```
+List<AdobeGroup> groups = userManagementApi.GetGroups();
+```
+
 ### Create a group
 ```
-ApiResponse response = userManagementApi.CreateUserGroup("Your group", "Your Group Description", "ignoreIfAlreadyExists");
+AdobeApiResponse response = userManagementApi.CreateUserGroup("Your group", "Your Group Description", "ignoreIfAlreadyExists");
 ```
 
 ### Update a group
 ```
-ApiResponse response = userManagementApi.UpdateUserGroup(originalGroupName: "Your group", newGroupName: "Your New Group Name", description: "Your new description");
+AdobeApiResponse response = userManagementApi.UpdateUserGroup(originalGroupName: "Your group", newGroupName: "Your New Group Name", description: "Your new description");
 ```
 
 ### Delete a group
 ```
-ApiResponse response = userManagementApi.DeleteUserGroup("Your group");
+AdobeApiResponse response = userManagementApi.DeleteUserGroup("Your group");
 ```
 
 ### Add a User to a Group
 
 ```
-ApiResponse response = userManagementApi.AddUserToGroup("Your group", "user@example.com");
+AdobeApiResponse response = userManagementApi.AddUserToGroup("Your group", "user@example.com");
 ```
 
 ### Add multiple Users to a Group
 
 ```
 string[] users = { "user1@example.com", "user2@example.com" };
-ApiResponse response = userManagementApi.AddUsersToGroup("Your group", users);
+AdobeApiResponse response = userManagementApi.AddUsersToGroup("Your group", users);
 ```
 
 ### Remove a User from a Group
 ```
-ApiResponse response = userManagementApi.RemoveUserFromGroup("Your group", "user@example.com");
+AdobeApiResponse response = userManagementApi.RemoveUserFromGroup("Your group", "user@example.com");
 ```
 
 ### Remove multiple Users from a Group
 ```
 string[] users = { "user1@example.com", "user2@example.com" };
-ApiResponse response = userManagementApi.RemoveUsersFromGroup("Your group", users);
+AdobeApiResponse response = userManagementApi.RemoveUsersFromGroup("Your group", users);
 ```
 
 ### Get a specific user
@@ -80,19 +85,19 @@ AdobeUser user = userManagementApi.GetUser("test@example.com");
 
 ### Create a User
 ```
-ApiResponse response = userManagementApi.CreateUser("user@example.com", "John", "Doe");
+AdobeApiResponse response = userManagementApi.CreateUser("user@example.com", "John", "Doe");
 ```
 
 ### Update a user
 ```
-ApiResponse response = userManagementApi.UpdateUser(originalUserName: "user@example.com", newUserName: "user1@example.com", firstName: "NewJohn", lastName: "NewDoe");
+AdobeApiResponse response = userManagementApi.UpdateUser(originalUserName: "user@example.com", newUserName: "user1@example.com", firstName: "NewJohn", lastName: "NewDoe");
 ```
 
 ### Delete a User
 ```
 // hardDelete: false will only remove them from Users Menu
 // hardDelete: true will remove them from Users Menu and Directory Users Menu
-ApiResponse response = userManagementApi.DeleteUser("user@example.com", hardDelete: false);
+AdobeApiResponse response = userManagementApi.DeleteUser("user@example.com", hardDelete: false);
 ```
 
 
