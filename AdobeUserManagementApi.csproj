@@ -1,7 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>AdobeUserManagementApi</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Andrew Gaston</Authors>
+    <Owners>University of South Alabama</Owners>
+    <Company>University of South Alabama</Company>
+    <Title>Adobe User Management Api</Title>
+    <Description>C# Wrapper for Adobe User Management API (UMAPI)</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/southalabama/AdobeUserManagementApi</PackageProjectUrl>
+    <Copyright>Copyright 2021</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

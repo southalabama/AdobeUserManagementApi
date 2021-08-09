@@ -2,7 +2,11 @@
 
 This project is a C#/.NET 5.0 wrapper for the Adobe User Management REST Api (UMAPI).
 
+NuGet package: https://www.nuget.org/packages/AdobeUserManagementApi
+
+
 API Reference: https://adobe-apiplatform.github.io/umapi-documentation/en/RefOverview.html
+
 
 Adobe developer console: https://console.adobe.io/home
 

@@ -464,7 +464,7 @@ namespace AdobeUserManagementApi
             if (string.IsNullOrWhiteSpace(groupName))
             {
                 throw new ArgumentException("groupName is required.", nameof(groupName));
-            }            
+            }
             RestRequest request = new(API_ACTION_URI, Method.POST);
             GroupAction[] groupActions = new GroupAction[]
             {
@@ -489,7 +489,7 @@ namespace AdobeUserManagementApi
             return Execute<AdobeApiResponse>(request);
         }
 
-                /// <summary>
+        /// <summary>
         /// Updates a user group
         /// </summary>
         /// <param name="groupName"></param>
@@ -501,11 +501,11 @@ namespace AdobeUserManagementApi
             if (string.IsNullOrWhiteSpace(originalGroupName))
             {
                 throw new ArgumentException("originalGroupName is required.", nameof(originalGroupName));
-            }            
+            }
             if (string.IsNullOrWhiteSpace(newGroupName))
             {
                 throw new ArgumentException("newGroupName is required.", nameof(newGroupName));
-            }            
+            }
             RestRequest request = new(API_ACTION_URI, Method.POST);
             GroupAction[] groupActions = new GroupAction[]
             {
@@ -541,7 +541,7 @@ namespace AdobeUserManagementApi
             if (string.IsNullOrWhiteSpace(groupName))
             {
                 throw new ArgumentException("groupName is required.", nameof(groupName));
-            }            
+            }
             RestRequest request = new(API_ACTION_URI, Method.POST);
             GroupAction[] groupActions = new GroupAction[]
             {
@@ -779,7 +779,7 @@ namespace AdobeUserManagementApi
                     }
                 }
             };
-           
+
             request.AddJsonBody(groupActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -1019,7 +1019,7 @@ namespace AdobeUserManagementApi
             if (string.IsNullOrWhiteSpace(groupName))
             {
                 throw new ArgumentException("groupName is required.", nameof(groupName));
-            }            
+            }
             RestRequest request = new(API_ACTION_URI, Method.POST);
             GroupAction[] groupActions = new GroupAction[]
             {
@@ -1056,11 +1056,11 @@ namespace AdobeUserManagementApi
             if (string.IsNullOrWhiteSpace(originalGroupName))
             {
                 throw new ArgumentException("originalGroupName is required.", nameof(originalGroupName));
-            }            
+            }
             if (string.IsNullOrWhiteSpace(newGroupName))
             {
                 throw new ArgumentException("newGroupName is required.", nameof(newGroupName));
-            }            
+            }
             RestRequest request = new(API_ACTION_URI, Method.POST);
             GroupAction[] groupActions = new GroupAction[]
             {
@@ -1096,7 +1096,7 @@ namespace AdobeUserManagementApi
             if (string.IsNullOrWhiteSpace(groupName))
             {
                 throw new ArgumentException("groupName is required.", nameof(groupName));
-            }            
+            }
             RestRequest request = new(API_ACTION_URI, Method.POST);
             GroupAction[] groupActions = new GroupAction[]
             {
