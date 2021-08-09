@@ -21,13 +21,13 @@ NuGet Gallery: https://www.nuget.org/packages/AdobeUserManagementApi
 
 ### Authenticate to Adobe's API
 
-```
+```csharp
 // There are optional parameters with sensible default values - metascopes and several URIs. You can change these if necessary for advanced scenarios.
 var userManagementApi = new UserManagementApi("yourClientId", "yourClientSecret", "yourTechAcctId", "yourOrgId");
 // You will need to supply the X509 cert in a way that makes sense for your use case. 
-X509Cert cert = null; 
+X509Certificate2 cert = null; 
 Dictionary<object, object> claims = userManagementApi.GetAuthClaims();
-userManagementApi.Authenticate(cert, claims);
+string authToken = userManagementApi.Authenticate(cert, claims);
 ```
 
 ### List members of the organization
