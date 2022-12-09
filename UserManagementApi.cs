@@ -54,12 +54,9 @@ namespace AdobeUserManagementApi
             request.AddHeader("X-Api-Key", _clientId);
             request.AddHeader("content-type", "application/json");
             var response = _restClient.Execute<T>(request);
-
             if (response.ErrorException != null)
             {
-                const string message = "Error retrieving response.  Check inner details for more info.";
-                var adobeException = new Exception(message, response.ErrorException);
-                throw adobeException;
+                throw response.ErrorException;
             }
             return response.Data;
         }
@@ -73,17 +70,17 @@ namespace AdobeUserManagementApi
         {
             string token = Jose.JWT.Encode(claims, certificate.GetRSAPrivateKey(), JwsAlgorithm.RS256);
 
-            RestClient client = new(_apiAuthUri);
+            RestClient client = new();
 
-            RestRequest request = new(Method.POST);
+            RestRequest request = new(_apiAuthUri, Method.Post);
             request.AddHeader("cache-control", "no-cache");
             request.AddHeader("content-type", "multipart/form-data; boundary=----boundary");
-            request.AddParameter("multipart/form-data; boundary=----boundary",
+            request.AddParameter("multipart/form-data",
                     "------boundary\r\nContent-Disposition: form-data; name=\"client_id\"\r\n\r\n" + _clientId +
                 "\r\n------boundary\r\nContent-Disposition: form-data; name=\"client_secret\"\r\n\r\n" + _clientSecret +
                 "\r\n------boundary\r\nContent-Disposition: form-data; name=\"jwt_token\"\r\n\r\n" + token +
                 "\r\n------boundary--", ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
+            RestResponse response = client.Execute(request);
             var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
             _authToken = dict["access_token"];
             return _authToken;
@@ -96,7 +93,7 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public AdobeApiResponse PerformUserActions(UserAction[] actions)
         {
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             request.AddJsonBody(actions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -108,7 +105,7 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public AdobeApiResponse PerformGroupActions(GroupAction[] actions)
         {
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             request.AddJsonBody(actions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -129,7 +126,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("One or more users are required.", nameof(users));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -168,7 +165,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("user is required.", nameof(user));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -206,7 +203,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("userName is required.", nameof(userName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -240,7 +237,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("group is required.", nameof(group));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -294,7 +291,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("option is required.", nameof(option));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             UserAction[] userActions = new UserAction[]
             {
                 new UserAction
@@ -345,7 +342,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("lastName is required.", nameof(lastName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             UserAction[] userActions = new UserAction[]
             {
                 new UserAction
@@ -377,7 +374,7 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public UserResponse GetUser(string userString)
         {
-            RestRequest request = new($"organizations/{_orgId}/users/{userString}", Method.GET);
+            RestRequest request = new($"organizations/{_orgId}/users/{userString}", Method.Get);
             return Execute<UserResponse>(request);
         }
 
@@ -388,18 +385,11 @@ namespace AdobeUserManagementApi
         public List<AdobeUser> GetOrgUsers()
         {
             // adobe api paging is zero-indexed
-            int iPage = 0;
             List<AdobeUser> adobeUsers = new();
             GroupUsersResponse GroupUsersResponse = new();
-            // Paging support. One request returned all 600+ users in one response.
-            // However, the documentation does not specify an exact maximum number of records returned in one page
-            while (!GroupUsersResponse.LastPage)
-            {
-                RestRequest request = new($"{API_USER_URI}/{iPage}", Method.GET);
-                GroupUsersResponse = Execute<GroupUsersResponse>(request);
-                adobeUsers.AddRange(GroupUsersResponse.Users);
-                iPage++;
-            }
+            RestRequest request = new($"{API_USER_URI}/0", Method.Get);
+            GroupUsersResponse = Execute<GroupUsersResponse>(request);
+            adobeUsers.AddRange(GroupUsersResponse.Users);
             return adobeUsers;
         }
 
@@ -414,19 +404,11 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("group is required.", nameof(group));
             }
-            // adobe api paging is zero-indexed
-            int iPage = 0;
             List<AdobeUser> adobeUsers = new();
             GroupUsersResponse GroupUsersResponse = new();
-            // Paging support. One request returned all 600+ users in one response.
-            // However, the documentation does not specify an exact maximum number of records returned in one page
-            while (!GroupUsersResponse.LastPage)
-            {
-                RestRequest request = new($"{API_USER_URI}/{iPage}/{group}", Method.GET);
-                GroupUsersResponse = Execute<GroupUsersResponse>(request);
-                adobeUsers.AddRange(GroupUsersResponse.Users);
-                iPage++;
-            }
+            RestRequest request = new($"{API_USER_URI}/0/{group}", Method.Get);
+            GroupUsersResponse = Execute<GroupUsersResponse>(request);
+            adobeUsers.AddRange(GroupUsersResponse.Users);
             return adobeUsers;
         }
 
@@ -436,19 +418,11 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public List<AdobeGroup> GetGroups()
         {
-            // adobe api paging is zero-indexed
-            int iPage = 0;
             List<AdobeGroup> adobeGroups = new();
             GroupResponse groupResponse = new();
-            // Paging support. One request returned all 600+ users in one response.
-            // However, the documentation does not specify an exact maximum number of records returned in one page
-            while (!groupResponse.LastPage)
-            {
-                RestRequest request = new($"{API_GROUP_URI}/{iPage}", Method.GET);
-                groupResponse = Execute<GroupResponse>(request);
-                adobeGroups.AddRange(groupResponse.Groups);
-                iPage++;
-            }
+            RestRequest request = new($"{API_GROUP_URI}/0", Method.Get);
+            groupResponse = Execute<GroupResponse>(request);
+            adobeGroups.AddRange(groupResponse.Groups);
             return adobeGroups;
         }
 
@@ -465,7 +439,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("groupName is required.", nameof(groupName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -506,7 +480,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("newGroupName is required.", nameof(newGroupName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -542,7 +516,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("groupName is required.", nameof(groupName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -574,7 +548,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("userName is required.", nameof(userName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             UserAction[] userActions = new UserAction[]
             {
                 new UserAction
@@ -611,9 +585,7 @@ namespace AdobeUserManagementApi
 
             if (response.ErrorException != null)
             {
-                const string message = "Error retrieving response.  Check inner details for more info.";
-                var adobeException = new Exception(message, response.ErrorException);
-                throw adobeException;
+                throw response.ErrorException;
             }
             return response.Data;
         }
@@ -627,17 +599,17 @@ namespace AdobeUserManagementApi
         {
             string token = Jose.JWT.Encode(claims, certificate.GetRSAPrivateKey(), JwsAlgorithm.RS256);
 
-            RestClient client = new(_apiAuthUri);
+            RestClient client = new();
 
-            RestRequest request = new(Method.POST);
+            RestRequest request = new(_apiAuthUri, Method.Post);
             request.AddHeader("cache-control", "no-cache");
             request.AddHeader("content-type", "multipart/form-data; boundary=----boundary");
-            request.AddParameter("multipart/form-data; boundary=----boundary",
+            request.AddParameter("multipart/form-data",
                     "------boundary\r\nContent-Disposition: form-data; name=\"client_id\"\r\n\r\n" + _clientId +
                 "\r\n------boundary\r\nContent-Disposition: form-data; name=\"client_secret\"\r\n\r\n" + _clientSecret +
                 "\r\n------boundary\r\nContent-Disposition: form-data; name=\"jwt_token\"\r\n\r\n" + token +
                 "\r\n------boundary--", ParameterType.RequestBody);
-            IRestResponse response = await client.ExecuteAsync(request);
+            RestResponse response = await client.ExecuteAsync(request);
             var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
             _authToken = dict["access_token"];
             return _authToken;
@@ -650,7 +622,7 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public async Task<AdobeApiResponse> PerformUserActionsAsync(UserAction[] actions)
         {
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             request.AddJsonBody(actions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -662,7 +634,7 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public async Task<AdobeApiResponse> PerformGroupActionsAsync(GroupAction[] actions)
         {
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             request.AddJsonBody(actions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -684,7 +656,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("One or more users are required.", nameof(users));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -723,7 +695,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("user is required.", nameof(user));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -761,7 +733,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("userName is required.", nameof(userName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -796,7 +768,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("group is required.", nameof(group));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -849,7 +821,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("option is required.", nameof(option));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             UserAction[] userActions = new UserAction[]
             {
                 new UserAction
@@ -900,7 +872,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("lastName is required.", nameof(lastName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             UserAction[] userActions = new UserAction[]
             {
                 new UserAction
@@ -932,7 +904,7 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public async Task<UserResponse> GetUserAsync(string userString)
         {
-            RestRequest request = new($"organizations/{_orgId}/users/{userString}", Method.GET);
+            RestRequest request = new($"organizations/{_orgId}/users/{userString}", Method.Get);
             return await ExecuteAsync<UserResponse>(request);
         }
 
@@ -942,19 +914,11 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public async Task<List<AdobeUser>> GetOrgUsersAsync()
         {
-            // adobe api paging is zero-indexed
-            int iPage = 0;
             List<AdobeUser> adobeUsers = new();
             GroupUsersResponse GroupUsersResponse = new();
-            // Paging support. One request returned all 600+ users in one response.
-            // However, the documentation does not specify an exact maximum number of records returned in one page
-            while (!GroupUsersResponse.LastPage)
-            {
-                RestRequest request = new($"{API_USER_URI}/{iPage}", Method.GET);
+                RestRequest request = new($"{API_USER_URI}/0", Method.Get);
                 GroupUsersResponse = await ExecuteAsync<GroupUsersResponse>(request);
                 adobeUsers.AddRange(GroupUsersResponse.Users);
-                iPage++;
-            }
             return adobeUsers;
         }
 
@@ -969,19 +933,11 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("group is required.", nameof(group));
             }
-            // adobe api paging is zero-indexed
-            int iPage = 0;
             List<AdobeUser> adobeUsers = new List<AdobeUser>();
             GroupUsersResponse GroupUsersResponse = new GroupUsersResponse();
-            // Paging support. One request returned all 600+ users in one response.
-            // However, the documentation does not specify an exact maximum number of records returned in one page
-            while (!GroupUsersResponse.LastPage)
-            {
-                var request = new RestRequest($"{API_USER_URI}/{iPage}/{group}", Method.GET);
-                GroupUsersResponse = await ExecuteAsync<GroupUsersResponse>(request);
-                adobeUsers.AddRange(GroupUsersResponse.Users);
-                iPage++;
-            }
+            var request = new RestRequest($"{API_USER_URI}/0/{group}", Method.Get);
+            GroupUsersResponse = await ExecuteAsync<GroupUsersResponse>(request);
+            adobeUsers.AddRange(GroupUsersResponse.Users);
             return adobeUsers;
         }
 
@@ -992,18 +948,11 @@ namespace AdobeUserManagementApi
         public async Task<List<AdobeGroup>> GetGroupsAsync()
         {
             // adobe api paging is zero-indexed
-            int iPage = 0;
             List<AdobeGroup> adobeGroups = new();
             GroupResponse groupResponse = new();
-            // Paging support. One request returned all 600+ users in one response.
-            // However, the documentation does not specify an exact maximum number of records returned in one page
-            while (!groupResponse.LastPage)
-            {
-                RestRequest request = new($"{API_GROUP_URI}/{iPage}", Method.GET);
-                groupResponse = await ExecuteAsync<GroupResponse>(request);
-                adobeGroups.AddRange(groupResponse.Groups);
-                iPage++;
-            }
+            RestRequest request = new($"{API_GROUP_URI}/0", Method.Get);
+            groupResponse = await ExecuteAsync<GroupResponse>(request);
+            adobeGroups.AddRange(groupResponse.Groups);
             return adobeGroups;
         }
 
@@ -1020,7 +969,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("groupName is required.", nameof(groupName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -1061,7 +1010,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("newGroupName is required.", nameof(newGroupName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -1097,7 +1046,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("groupName is required.", nameof(groupName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             GroupAction[] groupActions = new GroupAction[]
             {
                 new GroupAction
@@ -1130,7 +1079,7 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("userName is required.", nameof(userName));
             }
-            RestRequest request = new(API_ACTION_URI, Method.POST);
+            RestRequest request = new(API_ACTION_URI, Method.Post);
             UserAction[] userActions = new UserAction[]
             {
                 new UserAction
@@ -1156,13 +1105,14 @@ namespace AdobeUserManagementApi
         #region utils
         public Dictionary<object, object> GetAuthClaims()
         {
-            Dictionary<object, object> claims = new Dictionary<object, object>();
-            claims.Add("exp", DateTimeOffset.Now.ToUnixTimeSeconds() + 600);
-            claims.Add("iss", _orgId);
-            claims.Add("sub", _techAcctId);
-            claims.Add("aud", API_AUD_URI);
+            Dictionary<object, object> claims = new Dictionary<object, object>
+            {
+                { "exp", DateTimeOffset.Now.ToUnixTimeSeconds() + 600 },
+                { "iss", _orgId },
+                { "sub", _techAcctId },
+                { "aud", API_AUD_URI }
+            };
             string[] scopes = _metascopes.Split(',');
-
             foreach (string scope in scopes)
             {
                 claims.Add(scope, true);
