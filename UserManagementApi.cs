@@ -11,39 +11,33 @@ namespace AdobeUserManagementApi
 {
     // https://www.adobe.io/authentication/auth-methods.html#!AdobeDocs/adobeio-auth/master/JWT/JWT.md
     // https://github.com/AdobeDocs/adobeio-auth/tree/stage/JWT/samples/adobe-jwt-dotnet
-    public class UserManagementApi
+    public class UserManagementApi(
+        string clientId,
+        string clientSecret,
+        string techAcctId,
+        string orgId,
+        string metascopes = "https://ims-na1.adobelogin.com/s/ent_user_sdk",
+        string apiBaseUri = "https://usermanagement.adobe.io/v2/usermanagement",
+        string apiAuthUri = "https://ims-na1.adobelogin.com/ims/exchange/jwt/",
+        string apiAudienceUri = "https://ims-na1.adobelogin.com/c/")
     {
         // These fields can be found here https://console.adobe.io/projects/
-        private readonly string _clientId, _clientSecret, _techAcctId, _orgId, _metascopes, _apiBaseUri, _apiAuthUri, _apiAudienceUri;
+        private readonly string _clientId = clientId, 
+                                _clientSecret = clientSecret, 
+                                _techAcctId = techAcctId, 
+                                _orgId = orgId, 
+                                _metascopes = metascopes, 
+                                _apiBaseUri = apiBaseUri, 
+                                _apiAuthUri = apiAuthUri, 
+                                _apiAudienceUri = apiAudienceUri;
+
         private string API_ACTION_URI => $"action/{_orgId}";
         private string API_USER_URI => $"users/{_orgId}";
         private string API_GROUP_URI => $"groups/{_orgId}";
         private string API_AUD_URI => $"{_apiAudienceUri}{_clientId}";
-        private JsonSerializerSettings JsonSettings => new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+        private static JsonSerializerSettings JsonSettings => new() { NullValueHandling = NullValueHandling.Ignore };
         private string _authToken;
-        private readonly RestClient _restClient;
-
-        public UserManagementApi(
-            string clientId,
-            string clientSecret,
-            string techAcctId,
-            string orgId,
-            string metascopes = "https://ims-na1.adobelogin.com/s/ent_user_sdk",
-            string apiBaseUri = "https://usermanagement.adobe.io/v2/usermanagement",
-            string apiAuthUri = "https://ims-na1.adobelogin.com/ims/exchange/jwt/",
-            string apiAudienceUri = "https://ims-na1.adobelogin.com/c/")
-        {
-            _restClient = new RestClient(apiBaseUri);
-            _restClient.UseNewtonsoftJson(JsonSettings);
-            _clientId = clientId;
-            _clientSecret = clientSecret;
-            _techAcctId = techAcctId;
-            _orgId = orgId;
-            _metascopes = metascopes;
-            _apiBaseUri = apiBaseUri;
-            _apiAuthUri = apiAuthUri;
-            _apiAudienceUri = apiAudienceUri;
-        }
+        private readonly RestClient _restClient = new RestClient(apiBaseUri, configureSerialization: s => s.UseNewtonsoftJson(JsonSettings));
 
         #region Synchronous Methods
         // https://restsharp.dev/usage/
