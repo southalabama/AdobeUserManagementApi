@@ -115,12 +115,6 @@ users = userManagementApi.GetGroupMembers("Your group name");
 users = await userManagementApi.GetGroupMembersAsync("Your group name");
 ```
 
-## Common issues
-
-An X509 certificate is required for authentication. Your certificate info will come from Adobe when you set up your API access within it. X509 certificate storage flags are tricky to work with and will change depending on your target environment.
-
-For Console applications, you will want to use ```X509KeyStorageFlags.Exportable``` and in Web Applications ```X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable```
-
 ## Advanced Scenarios and bulk operations
 
 The specific methods of the UserManagementApi class may not meet your needs. For advanced scenarios, you can use the following two methods.
