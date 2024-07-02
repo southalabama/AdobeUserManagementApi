@@ -14,17 +14,14 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/southalabama/AdobeUserManagementApi</PackageProjectUrl>
     <Copyright>Copyright 2021</Copyright>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <FileVersion>1.0.2</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jose-Jwt" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RestSharp" Version="111.3.0" />
     <PackageReference Include="RestSharp.Serializers.NewtonsoftJson" Version="111.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\DotNetCore\USALibCore\USALibAdobeCore\USALibAdobeCore.csproj" />
   </ItemGroup>
 
 </Project>
