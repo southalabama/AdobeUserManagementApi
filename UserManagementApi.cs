@@ -3,7 +3,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Jose;
 using RestSharp;
 using RestSharp.Serializers.NewtonsoftJson;
 
@@ -18,7 +17,7 @@ namespace AdobeUserManagementApi
         string orgId,
         string metascopes = "https://ims-na1.adobelogin.com/s/ent_user_sdk",
         string apiBaseUri = "https://usermanagement.adobe.io/v2/usermanagement",
-        string apiAuthUri = "https://ims-na1.adobelogin.com/ims/exchange/jwt/",
+        string apiAuthUri = "https://ims-na1.adobelogin.com/ims/token/v2",
         string apiAudienceUri = "https://ims-na1.adobelogin.com/c/")
     {
         // These fields can be found here https://console.adobe.io/projects/
@@ -35,9 +34,10 @@ namespace AdobeUserManagementApi
         private string API_USER_URI => $"users/{_orgId}";
         private string API_GROUP_URI => $"groups/{_orgId}";
         private string API_AUD_URI => $"{_apiAudienceUri}{_clientId}";
+        private string API_AUTH_URI => $"{_apiAuthUri}?grant_type=client_credentials&client_id={_clientId}&client_secret={_clientSecret}&scope=openid,AdobeID,user_management_sdk";
         private static JsonSerializerSettings JsonSettings => new() { NullValueHandling = NullValueHandling.Ignore };
         private string _authToken;
-        private readonly RestClient _restClient = new RestClient(apiBaseUri, configureSerialization: s => s.UseNewtonsoftJson(JsonSettings));
+        private readonly RestClient _restClient = new(apiBaseUri, configureSerialization: s => s.UseNewtonsoftJson(JsonSettings));
 
         #region Synchronous Methods
         // https://restsharp.dev/usage/
@@ -60,20 +60,11 @@ namespace AdobeUserManagementApi
         /// Pass this token in the Authorization header in all subsequent requests to the User Management API.
         /// </summary>
         /// <returns></returns>
-        public string Authenticate(X509Certificate2 certificate, Dictionary<object, object> claims)
+        public string Authenticate()
         {
-            string token = Jose.JWT.Encode(claims, certificate.GetRSAPrivateKey(), JwsAlgorithm.RS256);
-
             RestClient client = new();
-
-            RestRequest request = new(_apiAuthUri, Method.Post);
+            RestRequest request = new(API_AUTH_URI, Method.Post);
             request.AddHeader("cache-control", "no-cache");
-            request.AddHeader("content-type", "multipart/form-data; boundary=----boundary");
-            request.AddParameter("multipart/form-data",
-                    "------boundary\r\nContent-Disposition: form-data; name=\"client_id\"\r\n\r\n" + _clientId +
-                "\r\n------boundary\r\nContent-Disposition: form-data; name=\"client_secret\"\r\n\r\n" + _clientSecret +
-                "\r\n------boundary\r\nContent-Disposition: form-data; name=\"jwt_token\"\r\n\r\n" + token +
-                "\r\n------boundary--", ParameterType.RequestBody);
             RestResponse response = client.Execute(request);
             var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
             _authToken = dict["access_token"];
@@ -121,13 +112,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("One or more users are required.", nameof(users));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = group,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Add = new Add
@@ -135,9 +126,9 @@ namespace AdobeUserManagementApi
                                 User = users
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -160,23 +151,23 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("user is required.", nameof(user));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = group,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Add = new Add
                             {
-                                User = new string[] { user }
+                                User = [user]
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -198,23 +189,23 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("userName is required.", nameof(userName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = group,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Remove = new Remove
                             {
-                                User = new string[] { userName }
+                                User = [userName]
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -232,13 +223,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("group is required.", nameof(group));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = group,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Remove = new Remove
@@ -247,9 +238,9 @@ namespace AdobeUserManagementApi
                             }
                         }
 
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -286,13 +277,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("option is required.", nameof(option));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            UserAction[] userActions = new UserAction[]
-            {
+            UserAction[] userActions =
+            [
                 new UserAction
                 {
                     User = userName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new  Do
                         {
                             CreateEnterpriseID = new CreateEnterpriseID
@@ -304,9 +295,9 @@ namespace AdobeUserManagementApi
                                 Option = option
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(userActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -337,13 +328,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("lastName is required.", nameof(lastName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            UserAction[] userActions = new UserAction[]
-            {
+            UserAction[] userActions =
+            [
                 new UserAction
                 {
                     User = originalUserName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Update = new Update
@@ -354,9 +345,9 @@ namespace AdobeUserManagementApi
                                 UserName = newUserName
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(userActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -434,13 +425,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("groupName is required.", nameof(groupName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = groupName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             CreateUserGroup = new CreateUserGroup
@@ -450,9 +441,9 @@ namespace AdobeUserManagementApi
                                 Option = option
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -475,13 +466,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("newGroupName is required.", nameof(newGroupName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = originalGroupName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             UpdateUserGroup = new UpdateUserGroup
@@ -490,9 +481,9 @@ namespace AdobeUserManagementApi
                                 Description = description,
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -511,20 +502,20 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("groupName is required.", nameof(groupName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = groupName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             DeleteUserGroup = new()
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -543,13 +534,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("userName is required.", nameof(userName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            UserAction[] userActions = new UserAction[]
-            {
+            UserAction[] userActions =
+            [
                 new UserAction
                 {
                     User = userName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             RemoveFromOrg = new RemoveFromOrg
@@ -557,9 +548,9 @@ namespace AdobeUserManagementApi
                                 DeleteAccount = hardDelete
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(userActions);
             return Execute<AdobeApiResponse>(request);
         }
@@ -589,20 +580,11 @@ namespace AdobeUserManagementApi
         /// Pass this token in the Authorization header in all subsequent requests to the User Management API.
         /// </summary>
         /// <returns></returns>
-        public async Task<string> AuthenticateAsync(X509Certificate2 certificate, Dictionary<object, object> claims)
+        public async Task<string> AuthenticateAsync()
         {
-            string token = Jose.JWT.Encode(claims, certificate.GetRSAPrivateKey(), JwsAlgorithm.RS256);
-
             RestClient client = new();
-
             RestRequest request = new(_apiAuthUri, Method.Post);
             request.AddHeader("cache-control", "no-cache");
-            request.AddHeader("content-type", "multipart/form-data; boundary=----boundary");
-            request.AddParameter("multipart/form-data",
-                    "------boundary\r\nContent-Disposition: form-data; name=\"client_id\"\r\n\r\n" + _clientId +
-                "\r\n------boundary\r\nContent-Disposition: form-data; name=\"client_secret\"\r\n\r\n" + _clientSecret +
-                "\r\n------boundary\r\nContent-Disposition: form-data; name=\"jwt_token\"\r\n\r\n" + token +
-                "\r\n------boundary--", ParameterType.RequestBody);
             RestResponse response = await client.ExecuteAsync(request);
             var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
             _authToken = dict["access_token"];
@@ -651,13 +633,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("One or more users are required.", nameof(users));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = group,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Add = new Add
@@ -665,9 +647,9 @@ namespace AdobeUserManagementApi
                                 User = users
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -690,23 +672,23 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("user is required.", nameof(user));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = group,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Add = new Add
                             {
-                                User = new string[] { user }
+                                User = [user]
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -728,23 +710,23 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("userName is required.", nameof(userName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = group,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Remove = new Remove
                             {
-                                User = new string[] { userName }
+                                User = [userName]
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
 
             request.AddJsonBody(groupActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
@@ -763,13 +745,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("group is required.", nameof(group));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = group,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Remove = new Remove
@@ -777,9 +759,9 @@ namespace AdobeUserManagementApi
                                 User = users
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -816,13 +798,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("option is required.", nameof(option));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            UserAction[] userActions = new UserAction[]
-            {
+            UserAction[] userActions =
+            [
                 new UserAction
                 {
                     User = userName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             CreateEnterpriseID = new CreateEnterpriseID
@@ -834,9 +816,9 @@ namespace AdobeUserManagementApi
                                 Option = option
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(userActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -867,13 +849,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("lastName is required.", nameof(lastName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            UserAction[] userActions = new UserAction[]
-            {
+            UserAction[] userActions =
+            [
                 new UserAction
                 {
                     User = originalUserName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             Update = new Update
@@ -884,9 +866,9 @@ namespace AdobeUserManagementApi
                                 UserName = newUserName
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(userActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -908,7 +890,7 @@ namespace AdobeUserManagementApi
         /// <returns></returns>
         public async Task<List<AdobeUser>> GetOrgUsersAsync()
         {
-            List<AdobeUser> adobeUsers = new();
+            List<AdobeUser> adobeUsers = [];
             GroupUsersResponse GroupUsersResponse = new();
                 RestRequest request = new($"{API_USER_URI}/0", Method.Get);
                 GroupUsersResponse = await ExecuteAsync<GroupUsersResponse>(request);
@@ -927,8 +909,8 @@ namespace AdobeUserManagementApi
             {
                 throw new ArgumentException("group is required.", nameof(group));
             }
-            List<AdobeUser> adobeUsers = new List<AdobeUser>();
-            GroupUsersResponse GroupUsersResponse = new GroupUsersResponse();
+            List<AdobeUser> adobeUsers = [];
+            GroupUsersResponse GroupUsersResponse = new();
             var request = new RestRequest($"{API_USER_URI}/0/{group}", Method.Get);
             GroupUsersResponse = await ExecuteAsync<GroupUsersResponse>(request);
             adobeUsers.AddRange(GroupUsersResponse.Users);
@@ -942,7 +924,7 @@ namespace AdobeUserManagementApi
         public async Task<List<AdobeGroup>> GetGroupsAsync()
         {
             // adobe api paging is zero-indexed
-            List<AdobeGroup> adobeGroups = new();
+            List<AdobeGroup> adobeGroups = [];
             GroupResponse groupResponse = new();
             RestRequest request = new($"{API_GROUP_URI}/0", Method.Get);
             groupResponse = await ExecuteAsync<GroupResponse>(request);
@@ -964,13 +946,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("groupName is required.", nameof(groupName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = groupName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             CreateUserGroup = new CreateUserGroup
@@ -980,9 +962,9 @@ namespace AdobeUserManagementApi
                                 Option = option
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -1005,13 +987,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("newGroupName is required.", nameof(newGroupName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = originalGroupName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             UpdateUserGroup = new UpdateUserGroup
@@ -1020,9 +1002,9 @@ namespace AdobeUserManagementApi
                                 Description = description,
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -1041,20 +1023,20 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("groupName is required.", nameof(groupName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            GroupAction[] groupActions = new GroupAction[]
-            {
+            GroupAction[] groupActions =
+            [
                 new GroupAction
                 {
                     UserGroup = groupName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             DeleteUserGroup = new()
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(groupActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -1074,13 +1056,13 @@ namespace AdobeUserManagementApi
                 throw new ArgumentException("userName is required.", nameof(userName));
             }
             RestRequest request = new(API_ACTION_URI, Method.Post);
-            UserAction[] userActions = new UserAction[]
-            {
+            UserAction[] userActions =
+            [
                 new UserAction
                 {
                     User = userName,
-                    _do = new Do[]
-                    {
+                    _do =
+                    [
                         new Do
                         {
                             RemoveFromOrg = new RemoveFromOrg
@@ -1088,9 +1070,9 @@ namespace AdobeUserManagementApi
                                 DeleteAccount = hardDelete
                             }
                         }
-                    }
+                    ]
                 }
-            };
+            ];
             request.AddJsonBody(userActions);
             return await ExecuteAsync<AdobeApiResponse>(request);
         }
@@ -1099,7 +1081,7 @@ namespace AdobeUserManagementApi
         #region utils
         public Dictionary<object, object> GetAuthClaims()
         {
-            Dictionary<object, object> claims = new Dictionary<object, object>
+            Dictionary<object, object> claims = new()
             {
                 { "exp", DateTimeOffset.Now.ToUnixTimeSeconds() + 600 },
                 { "iss", _orgId },
