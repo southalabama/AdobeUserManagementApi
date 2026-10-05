@@ -18,16 +18,15 @@
 //}]
 #endregion
 
-namespace AdobeUserManagementApi
-{
+namespace AdobeUserManagementApi;
 
-    public class UserAction
-    {
-        [JsonProperty("user")]
-        public string User { get; set; }
-        [JsonProperty("requestID")]
-        public string RequestID { get; set; }
-        [JsonProperty("do")]
-        public Do[] _do { get; set; }
-    }
+
+public class UserAction
+{
+    [JsonProperty("user")]
+    public string User { get; set; }
+    [JsonProperty("requestID")]
+    public string RequestID { get; set; }
+    [JsonProperty("do")]
+    public Do[] _do { get; set; }
 }

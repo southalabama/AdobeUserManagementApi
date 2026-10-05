@@ -1,10 +1,9 @@
 using Newtonsoft.Json;
 
-namespace AdobeUserManagementApi
+namespace AdobeUserManagementApi;
+
+public class RemoveFromOrg
 {
-    public class RemoveFromOrg
-    {
-        [JsonProperty("deleteAccount")]
-        public bool DeleteAccount { get; set; }
-    }
+    [JsonProperty("deleteAccount")]
+    public bool DeleteAccount { get; set; }
 }

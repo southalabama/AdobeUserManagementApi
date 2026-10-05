@@ -27,17 +27,16 @@
 //  }
 #endregion
 
-namespace AdobeUserManagementApi
+namespace AdobeUserManagementApi;
+
+public class GroupUsersResponse
 {
-    public class GroupUsersResponse
-    {
-        [JsonProperty("lastPage")]
-        public bool LastPage { get; set; }
-        [JsonProperty("result")]
-        public string Result { get; set; }
-        [JsonProperty("users")]
-        public AdobeUser[] Users { get; set; }
-        [JsonProperty("groupName")]
-        public string GroupName { get; set; }
-    }
+    [JsonProperty("lastPage")]
+    public bool LastPage { get; set; }
+    [JsonProperty("result")]
+    public string Result { get; set; }
+    [JsonProperty("users")]
+    public AdobeUser[] Users { get; set; }
+    [JsonProperty("groupName")]
+    public string GroupName { get; set; }
 }

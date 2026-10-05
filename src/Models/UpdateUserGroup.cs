@@ -1,12 +1,11 @@
 using Newtonsoft.Json;
 
-namespace AdobeUserManagementApi
+namespace AdobeUserManagementApi;
+
+public class UpdateUserGroup
 {
-    public class UpdateUserGroup
-    {
-        [JsonProperty("name")]
-        public string Name { get; set; }
-        [JsonProperty("description")]
-        public string Description { get; set; }
-    }
+    [JsonProperty("name")]
+    public string Name { get; set; }
+    [JsonProperty("description")]
+    public string Description { get; set; }
 }
