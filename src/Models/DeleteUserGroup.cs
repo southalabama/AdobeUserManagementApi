@@ -1,9 +1,8 @@
 using Newtonsoft.Json;
 
-namespace AdobeUserManagementApi
+namespace AdobeUserManagementApi;
+
+public class DeleteUserGroup
 {
-    public class DeleteUserGroup
-    {
-        
-    }
+    
 }

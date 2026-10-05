@@ -30,15 +30,14 @@
 //}
 #endregion
 
-namespace AdobeUserManagementApi
+namespace AdobeUserManagementApi;
+
+public class GroupAction
 {
-    public class GroupAction
-    {
-        [JsonProperty("usergroup")]
-        public string UserGroup { get; set; }
-        // This field has a leading underscore because do is a reserved keyword in C#
-        // But when serializing, we should correct it because adobe API expects "do" not "_do"
-        [JsonProperty("do")]
-        public Do[] _do { get; set; }
-    }
+    [JsonProperty("usergroup")]
+    public string UserGroup { get; set; }
+    // This field has a leading underscore because do is a reserved keyword in C#
+    // But when serializing, we should correct it because adobe API expects "do" not "_do"
+    [JsonProperty("do")]
+    public Do[] _do { get; set; }
 }

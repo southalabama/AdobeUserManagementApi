@@ -1,22 +1,21 @@
 using Newtonsoft.Json;
 
-namespace AdobeUserManagementApi
+namespace AdobeUserManagementApi;
+
+public class AdobeGroup
 {
-    public class AdobeGroup
-    {
-        [JsonProperty("type")]
-        public string Type { get; set; }
+    [JsonProperty("type")]
+    public string Type { get; set; }
 
-        [JsonProperty("groupName")]
-        public string GroupName { get; set; }
+    [JsonProperty("groupName")]
+    public string GroupName { get; set; }
 
-        [JsonProperty("memberCount")]
-        public int MemberCount { get; set; }
-        [JsonProperty("productName")]
-        public string ProductName { get; set; }
-        [JsonProperty("productProfileName")]
-        public string ProductProfileName { get; set; }
-        [JsonProperty("licenseQuota")]
-        public string LicenseQuota { get; set; }
-    }
+    [JsonProperty("memberCount")]
+    public int MemberCount { get; set; }
+    [JsonProperty("productName")]
+    public string ProductName { get; set; }
+    [JsonProperty("productProfileName")]
+    public string ProductProfileName { get; set; }
+    [JsonProperty("licenseQuota")]
+    public string LicenseQuota { get; set; }
 }

@@ -1,12 +1,11 @@
 ﻿using Newtonsoft.Json;
 
-namespace AdobeUserManagementApi
+namespace AdobeUserManagementApi;
+
+public class UserResponse
 {
-    public class UserResponse
-    {
-        [JsonProperty("result")]
-        public string Result { get; set; }
-        [JsonProperty("user")]
-        public AdobeUser User { get; set; }
-    }
+    [JsonProperty("result")]
+    public string Result { get; set; }
+    [JsonProperty("user")]
+    public AdobeUser User { get; set; }
 }
