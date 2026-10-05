@@ -1,6 +1,6 @@
 # AdobeUserManagementApi
 
-This project is a C#/.NET 8 wrapper for the Adobe User Management REST Api (UMAPI).
+This project is a C#/.NET 10 wrapper for the Adobe User Management REST Api (UMAPI).
 
 
 API Reference: https://adobe-apiplatform.github.io/umapi-documentation/en/RefOverview.html
